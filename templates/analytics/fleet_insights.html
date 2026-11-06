@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Fleet Insights — AutoLifecycle Predictor{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="section-label">Analytics</div>
+                <h1 class="mb-1">Fleet Insights</h1>
+                <p class="text-muted mb-0">Multi-vehicle analysis and replacement planning overview.</p>
+            </div>
+            {% if is_prototype %}
+            <span class="demo-badge align-self-start">
+                <i class="bi bi-info-circle"></i>
+                Rule-Based Prototype
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-4 py-4">
+
+    {% if vehicles %}
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon emerald"><i class="bi bi-car-front"></i></div>
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">Total Vehicles</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="bi bi-calendar"></i></div>
+                <div class="stat-value">
+                    {% with total_age=0 %}
+                    —
+                    {% endwith %}
+                </div>
+                <div class="stat-label">Avg Vehicle Age</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="bi bi-speedometer2"></i></div>
+                <div class="stat-value">—</div>
+                <div class="stat-label">Avg Mileage</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="bi bi-tools"></i></div>
+                <div class="stat-value">—</div>
+                <div class="stat-label">Avg Repair Cost</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fleet table -->
+    <div class="alp-card mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0">Fleet Summary</h5>
+            <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-sm btn-primary-alp">
+                <i class="bi bi-plus-circle me-1"></i>Add Vehicle
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="alp-table">
+                <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Year</th>
+                        <th>Age</th>
+                        <th>Mileage</th>
+                        <th>Fuel</th>
+                        <th>Repair Spend</th>
+                        <th>Last Service</th>
+                        <th>Analysis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vehicles %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold text-white">{{ v.brand }} {{ v.model }}</div>
+                        </td>
+                        <td><span class="text-muted">{{ v.manufacturing_year }}</span></td>
+                        <td>
+                            <span class="{% if v.age_years <= 5 %}text-emerald{% elif v.age_years <= 9 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ v.age_years }}yr
+                            </span>
+                        </td>
+                        <td><span class="text-muted">{{ v.current_mileage|floatformat:0 }} km</span></td>
+                        <td>
+                            <span class="badge bg-dark border border-secondary text-muted">
+                                {{ v.get_fuel_type_display }}
+                            </span>
+                        </td>
+                        <td><span class="text-muted">₹{{ v.repair_expenditure|floatformat:0 }}</span></td>
+                        <td>
+                            <span class="{% if v.months_since_last_service > 12 %}text-danger{% elif v.months_since_last_service > 6 %}text-warning{% else %}text-emerald{% endif %}">
+                                {{ v.months_since_last_service }}mo
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'analytics:vehicle_outlook' v.pk %}"
+                               class="btn btn-sm btn-surface">
+                                Outlook <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="text-center py-5">
+        <i class="bi bi-graph-up-arrow display-1 text-muted mb-4 d-block"></i>
+        <h3 class="text-white mb-2">No fleet data yet</h3>
+        <p class="text-muted mb-4">Register vehicles to access fleet-level insights and replacement planning.</p>
+        <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>Register a Vehicle
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- ML Roadmap note -->
+    <div class="alp-card mt-4">
+        <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-cpu text-emerald fs-5 mt-1"></i>
+            <div>
+                <div class="fw-semibold text-white mb-1">Fleet Analytics Roadmap</div>
+                <p class="text-muted small mb-0">
+                    Full fleet intelligence — automated health scoring across all vehicles, optimal replacement
+                    scheduling, combined cost-of-ownership projections and cross-vehicle comparison charts —
+                    will be enabled once the ML models are trained on verified data.
+                    See <code>ml_engine/</code> and <strong>How It Works</strong> for dataset requirements.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

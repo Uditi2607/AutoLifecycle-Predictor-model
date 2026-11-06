@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}AutoLifecycle Predictor — AI-Powered Vehicle Lifecycle Advisor{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════ -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 fade-in-up">
+                <div class="hero-badge">
+                    <i class="bi bi-stars"></i>
+                    AI-Powered Vehicle Intelligence
+                </div>
+
+                <h1 class="hero-title">
+                    Know When to <span class="hero-gradient-text">Keep, Sell</span><br/>
+                    or Exchange Your Vehicle
+                </h1>
+
+                <p class="hero-subtitle">
+                    AutoLifecycle Predictor analyses your vehicle's age, mileage, health,
+                    depreciation curve and financial burden — delivering a clear, explainable
+                    lifecycle recommendation backed by machine learning.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Register Your Vehicle
+                    </a>
+                    <a href="{% url 'core:how_it_works' %}" class="btn btn-outline-alp btn-lg">
+                        <i class="bi bi-lightbulb me-2"></i>How It Works
+                    </a>
+                </div>
+
+                <!-- Trust signals -->
+                <div class="d-flex flex-wrap gap-4 mt-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-emerald"></i>
+                        <small class="text-muted">ML-Powered Analysis</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-graph-up text-emerald"></i>
+                        <small class="text-muted">Depreciation Forecasting</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-lightbulb text-emerald"></i>
+                        <small class="text-muted">Explainable Decisions</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard preview card -->
+            <div class="col-lg-6 fade-in-up delay-2">
+                <div class="alp-card alp-card-glass p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <div class="small text-muted mb-1">SAMPLE ANALYSIS</div>
+                            <h5 class="mb-0 text-white">2019 Toyota Camry</h5>
+                        </div>
+                        <span class="rec-badge keep">
+                            <i class="bi bi-check-circle-fill"></i> KEEP
+                        </span>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="p-3 rounded-alp border-alp text-center">
+                                <div class="text-emerald fw-bold fs-4">82<small class="fs-6">/100</small></div>
+                                <div class="text-muted small">Health Score</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-alp border-alp text-center">
+                                <div class="fw-bold fs-5 text-white">₹8.4L</div>
+                                <div class="text-muted small">Est. Resale Value</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-alp border-alp text-center">
+                                <div class="fw-bold fs-5 text-white">58%</div>
+                                <div class="text-muted small">Residual Value</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-alp border-alp text-center">
+                                <div class="fw-bold fs-5 text-white">₹9,200</div>
+                                <div class="text-muted small">Est. Annual Maintenance</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-alp" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2)">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-check-circle-fill text-emerald mt-1"></i>
+                            <div>
+                                <div class="small fw-semibold text-white">Recommendation: KEEP</div>
+                                <div class="small text-muted">Vehicle health is strong. Continue regular maintenance. Next review in 12 months.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-dim text-center mt-3 mb-0" style="font-size: 0.72rem;">
+                        ⚠️ Sample data for illustration only — not from a trained model.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FEATURES OVERVIEW
+══════════════════════════════════════════════ -->
+<section class="alp-section" style="background: var(--alp-charcoal);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-label">What We Analyse</div>
+            <h2 class="section-title">Seven-Signal Vehicle <span class="accent">Intelligence</span></h2>
+            <p class="text-muted" style="max-width: 560px; margin: 0 auto;">
+                Every recommendation is built from multiple independent data signals, combined
+                by our machine learning engine into a single, explainable decision.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            {% for feature in features %}
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card fade-in-up">
+                    <div class="feature-number">{{ forloop.counter }}</div>
+                    <h5 class="mb-2">{{ feature.title }}</h5>
+                    <p class="text-muted small mb-0">{{ feature.desc }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-number">1</div>
+                    <h5 class="mb-2">Vehicle Age &amp; Mileage</h5>
+                    <p class="text-muted small mb-0">Combined age-mileage signals calibrated against market depreciation patterns.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-number">2</div>
+                    <h5 class="mb-2">Resale Value Prediction</h5>
+                    <p class="text-muted small mb-0">ML model trained on verified market transaction data predicts current resale value.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-number">3</div>
+                    <h5 class="mb-2">Depreciation Forecasting</h5>
+                    <p class="text-muted small mb-0">12-month depreciation curve showing projected value loss over your holding period.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-number">4</div>
+                    <h5 class="mb-2">Vehicle Health Score</h5>
+                    <p class="text-muted small mb-0">Composite 0–100 health score from service history, mileage and repair patterns.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-number">5</div>
+                    <h5 class="mb-2">Maintenance Risk Assessment</h5>
+                    <p class="text-muted small mb-0">Risk-level classification (Low / Medium / High / Critical) with priority action list.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-number">6</div>
+                    <h5 class="mb-2">Cost of Ownership Analysis</h5>
+                    <p class="text-muted small mb-0">Financial burden assessment — repair ratio, annual cost and future expenditure estimate.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-number">7</div>
+                    <h5 class="mb-2">Exchange Decision Engine</h5>
+                    <p class="text-muted small mb-0">KEEP / MONITOR / SELL / EXCHANGE recommendation with full reasoning and confidence score.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CTA
+══════════════════════════════════════════════ -->
+<section class="alp-section">
+    <div class="container">
+        <div class="alp-card text-center p-5" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.03));">
+            <div class="section-label">Get Started</div>
+            <h2 class="section-title mb-3">Ready to Assess Your Vehicle?</h2>
+            <p class="text-muted mb-4" style="max-width: 480px; margin-left: auto; margin-right: auto;">
+                Register your vehicle in under 2 minutes and receive your first lifecycle assessment.
+            </p>
+            <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp btn-lg">
+                <i class="bi bi-plus-circle me-2"></i>Register a Vehicle — Free
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

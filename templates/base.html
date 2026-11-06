@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}AutoLifecycle Predictor{% endblock %}</title>
+    <meta name="description" content="AI-powered vehicle lifecycle, resale value prediction and exchange recommendation platform." />
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     NAVIGATION
+══════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg navbar-dark alp-nav sticky-top">
+    <div class="container-fluid px-4">
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:landing' %}">
+            <div class="brand-icon">
+                <i class="bi bi-activity"></i>
+            </div>
+            <span class="brand-name">AutoLifecycle<span class="brand-accent"> Predictor</span></span>
+        </a>
+
+        <!-- Toggler -->
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto ms-4 gap-1">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'landing' %}active{% endif %}"
+                       href="{% url 'core:landing' %}">
+                        <i class="bi bi-house-door me-1"></i>Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                       href="{% url 'core:dashboard' %}">
+                        <i class="bi bi-grid-1x2 me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'vehicles' in request.path %}active{% endif %}"
+                       href="{% url 'vehicles:vehicle_list' %}">
+                        <i class="bi bi-car-front me-1"></i>Vehicles
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'fleet_insights' %}active{% endif %}"
+                       href="{% url 'analytics:fleet_insights' %}">
+                        <i class="bi bi-graph-up-arrow me-1"></i>Fleet Insights
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'how_it_works' %}active{% endif %}"
+                       href="{% url 'core:how_it_works' %}">
+                        <i class="bi bi-lightbulb me-1"></i>How It Works
+                    </a>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Register Vehicle
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     MESSAGES
+══════════════════════════════════════════════ -->
+{% if messages %}
+<div class="container-fluid px-4 mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show alp-alert" role="alert">
+        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════════ -->
+<main class="alp-main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer class="alp-footer mt-auto">
+    <div class="container-fluid px-4">
+        <div class="row align-items-center py-4">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="brand-icon brand-icon-sm"><i class="bi bi-activity"></i></div>
+                    <span class="fw-semibold text-white">AutoLifecycle Predictor</span>
+                </div>
+                <p class="text-muted small mb-0">AI-powered vehicle lifecycle &amp; exchange advisor.</p>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="footer-links d-flex gap-4 justify-content-md-end">
+                    <a href="{% url 'core:how_it_works' %}" class="footer-link">How It Works</a>
+                    <a href="{% url 'vehicles:vehicle_register' %}" class="footer-link">Register Vehicle</a>
+                    <a href="{% url 'analytics:fleet_insights' %}" class="footer-link">Fleet Insights</a>
+                </div>
+                <p class="text-muted small mt-2 mb-0">&copy; 2024 AutoLifecycle Predictor. Built with Django &amp; Scikit-learn.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

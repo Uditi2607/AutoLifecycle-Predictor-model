@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}How It Works — AutoLifecycle Predictor{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="section-label">Methodology</div>
+        <h1 class="mb-2">How AutoLifecycle <span style="color: var(--alp-emerald);">Works</span></h1>
+        <p class="text-muted mb-0">
+            A transparent look at how we analyse your vehicle and produce explainable recommendations.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <!-- ── The 4-Stage Pipeline ─────────────────────────────── -->
+    <div class="text-center mb-5">
+        <div class="section-label">The Process</div>
+        <h2 class="section-title">Four-Stage Analysis <span class="accent">Pipeline</span></h2>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card text-center fade-in-up">
+                <div class="feature-number mx-auto mb-3">1</div>
+                <div class="fs-1 mb-3"><i class="bi bi-clipboard-data text-emerald"></i></div>
+                <h5>Data Input</h5>
+                <p class="text-muted small mb-0">
+                    You register your vehicle's key attributes: age, mileage, fuel type, service history
+                    and financial details.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card text-center fade-in-up delay-1">
+                <div class="feature-number mx-auto mb-3">2</div>
+                <div class="fs-1 mb-3"><i class="bi bi-cpu text-emerald"></i></div>
+                <h5>ML Analysis</h5>
+                <p class="text-muted small mb-0">
+                    Six independent ML modules analyse resale value, depreciation, health, maintenance
+                    risk and cost of ownership.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card text-center fade-in-up delay-2">
+                <div class="feature-number mx-auto mb-3">3</div>
+                <div class="fs-1 mb-3"><i class="bi bi-funnel text-emerald"></i></div>
+                <h5>Decision Engine</h5>
+                <p class="text-muted small mb-0">
+                    A multi-signal decision engine weighs all module outputs to produce KEEP, MONITOR,
+                    SELL or EXCHANGE with a confidence score.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card text-center fade-in-up delay-3">
+                <div class="feature-number mx-auto mb-3">4</div>
+                <div class="fs-1 mb-3"><i class="bi bi-lightbulb text-emerald"></i></div>
+                <h5>Explainable Report</h5>
+                <p class="text-muted small mb-0">
+                    You receive a detailed report with the reasoning behind each recommendation, charts
+                    and an estimated exchange window.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="alp-divider" />
+
+    <!-- ── 6 ML Modules ─────────────────────────────────────── -->
+    <div class="text-center mb-5">
+        <div class="section-label">ML Engine</div>
+        <h2 class="section-title">The Six <span class="accent">Analysis Modules</span></h2>
+        <p class="text-muted" style="max-width: 560px; margin: 0 auto;">
+            Each module is independently implemented and can be extended or retrained without
+            affecting the others.
+        </p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon emerald flex-shrink-0"><i class="bi bi-currency-rupee"></i></div>
+                    <div>
+                        <h5 class="mb-1">1. Resale Price Predictor</h5>
+                        <p class="text-muted small mb-2">
+                            A Gradient Boosting Regressor trained on verified vehicle transaction data.
+                            Features include vehicle age, mileage, fuel type, transmission and owner count.
+                        </p>
+                        <span class="demo-badge"><i class="bi bi-clock me-1"></i>Awaiting Training Dataset</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon blue flex-shrink-0"><i class="bi bi-graph-down-arrow"></i></div>
+                    <div>
+                        <h5 class="mb-1">2. Depreciation Forecaster</h5>
+                        <p class="text-muted small mb-2">
+                            Projects a 10-year depreciation curve using declining balance modelling,
+                            calibrated for Indian market conditions and fuel type.
+                        </p>
+                        <span class="badge text-bg-secondary">Rule-Based — Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon emerald flex-shrink-0"><i class="bi bi-heart-pulse"></i></div>
+                    <div>
+                        <h5 class="mb-1">3. Vehicle Health Scorer</h5>
+                        <p class="text-muted small mb-2">
+                            Composite 0–100 health score from five weighted components: age, mileage,
+                            service regularity, repair burden and service recency.
+                        </p>
+                        <span class="badge text-bg-secondary">Rule-Based — Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon amber flex-shrink-0"><i class="bi bi-tools"></i></div>
+                    <div>
+                        <h5 class="mb-1">4. Maintenance Risk Assessor</h5>
+                        <p class="text-muted small mb-2">
+                            Risk-level classification (LOW / MEDIUM / HIGH / CRITICAL) with an estimated
+                            annual maintenance cost and prioritised action list.
+                        </p>
+                        <span class="badge text-bg-secondary">Rule-Based — Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon red flex-shrink-0"><i class="bi bi-wallet2"></i></div>
+                    <div>
+                        <h5 class="mb-1">5. Ownership Cost Estimator</h5>
+                        <p class="text-muted small mb-2">
+                            Estimates the financial cost of continued ownership vs. the opportunity cost
+                            of exchanging now, based on depreciation and maintenance projections.
+                        </p>
+                        <span class="badge text-bg-secondary">Rule-Based — Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon emerald flex-shrink-0"><i class="bi bi-signpost-split"></i></div>
+                    <div>
+                        <h5 class="mb-1">6. KEEP / MONITOR / EXCHANGE Engine</h5>
+                        <p class="text-muted small mb-2">
+                            Multi-signal decision function combining all five modules into one weighted
+                            recommendation with a confidence score and reasoning bullets.
+                        </p>
+                        <span class="badge text-bg-secondary">Rule-Based — Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="alp-divider" />
+
+    <!-- ── Dataset section ─────────────────────────────────── -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-database text-emerald fs-4"></i>
+                    <h5 class="mb-0">Training Dataset</h5>
+                </div>
+                <p class="text-muted small mb-3">
+                    The resale prediction model will be trained on the
+                    <a href="https://data.mendeley.com/datasets/8d38h82fyt/2" class="text-emerald"
+                       target="_blank" rel="noopener">
+                        Mendeley Vehicle Sales Dataset
+                    </a>
+                    (DOI: 10.17632/8d38h82fyt.2).
+                    This dataset contains verified used-vehicle transaction records with features
+                    including year, mileage, fuel type, seller type, transmission and selling price.
+                </p>
+                <div class="p-3 rounded-alp border-alp">
+                    <div class="small fw-semibold text-white mb-2">Dataset Status</div>
+                    <div class="d-flex align-items-center gap-2 text-warning">
+                        <i class="bi bi-clock"></i>
+                        <span class="small">Not yet downloaded — training pending.</span>
+                    </div>
+                    <div class="text-dim mt-2" style="font-size: 0.78rem;">
+                        Place the downloaded CSV in <code>ml_engine/data/raw/</code>, then run
+                        <code>python -m ml_engine.preprocessing</code> followed by
+                        <code>python -m ml_engine.train_resale</code>.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-shield-check text-emerald fs-4"></i>
+                    <h5 class="mb-0">Transparency Commitments</h5>
+                </div>
+                <ul class="text-muted small list-unstyled mb-0">
+                    <li class="mb-2 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle text-emerald mt-1 flex-shrink-0"></i>
+                        All rule-based estimates are clearly labelled as prototypes.
+                    </li>
+                    <li class="mb-2 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle text-emerald mt-1 flex-shrink-0"></i>
+                        ML models are only marked as "trained" after verified dataset ingestion and evaluation.
+                    </li>
+                    <li class="mb-2 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle text-emerald mt-1 flex-shrink-0"></i>
+                        Every recommendation includes a detailed reason list.
+                    </li>
+                    <li class="mb-2 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle text-emerald mt-1 flex-shrink-0"></i>
+                        Model training and prediction are strictly separated.
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle text-emerald mt-1 flex-shrink-0"></i>
+                        All model artifacts are versioned and stored in <code>artifacts/</code>.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CTA ─────────────────────────────────────────────── -->
+    <div class="text-center mt-5">
+        <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp btn-lg me-3">
+            <i class="bi bi-plus-circle me-2"></i>Register a Vehicle
+        </a>
+        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-alp btn-lg">
+            <i class="bi bi-grid me-2"></i>View Dashboard
+        </a>
+    </div>
+</div>
+
+{% endblock %}

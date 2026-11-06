@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — AutoLifecycle Predictor{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+    <!-- Page header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="mb-1" style="font-size: 1.75rem;">Fleet Dashboard</h1>
+            <p class="text-muted mb-0 small">Overview of all registered vehicles and lifecycle signals.</p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if demo_data %}
+            <span class="demo-badge">
+                <i class="bi bi-info-circle"></i>
+                Demo Statistics
+            </span>
+            {% endif %}
+            <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp">
+                <i class="bi bi-plus-circle me-1"></i>Add Vehicle
+            </a>
+        </div>
+    </div>
+
+    {% if demo_data and total_vehicles == 0 %}
+    <!-- Demo notice -->
+    <div class="alp-card mb-4" style="border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05);">
+        <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-info-circle-fill text-warning fs-5 mt-1"></i>
+            <div>
+                <div class="fw-semibold text-white mb-1">Dashboard showing demonstration data</div>
+                <p class="text-muted small mb-2">
+                    No vehicles have been registered yet. The statistics below use illustrative placeholder values
+                    to demonstrate the dashboard layout. Register your first vehicle to see real analytics.
+                </p>
+                <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-sm btn-outline-alp">
+                    Register First Vehicle
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Stats Row ─────────────────────────────────────────── -->
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon emerald"><i class="bi bi-car-front"></i></div>
+                <div class="stat-value"
+                     {% if total_vehicles == 0 %}data-count="12"{% else %}data-count="{{ total_vehicles }}"{% endif %}>
+                    {% if total_vehicles == 0 %}12*{% else %}{{ total_vehicles }}{% endif %}
+                </div>
+                <div class="stat-label">Total Vehicles</div>
+                {% if total_vehicles == 0 %}<div class="demo-badge mt-2">demo</div>{% endif %}
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon emerald"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-value" data-count="{% if total_vehicles == 0 %}7{% else %}0{% endif %}">
+                    {% if total_vehicles == 0 %}7*{% else %}—{% endif %}
+                </div>
+                <div class="stat-label">Vehicles: Keep</div>
+                {% if total_vehicles == 0 %}<div class="demo-badge mt-2">demo</div>{% endif %}
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="bi bi-eye"></i></div>
+                <div class="stat-value">
+                    {% if total_vehicles == 0 %}3*{% else %}—{% endif %}
+                </div>
+                <div class="stat-label">Vehicles: Monitor</div>
+                {% if total_vehicles == 0 %}<div class="demo-badge mt-2">demo</div>{% endif %}
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="bi bi-arrow-left-right"></i></div>
+                <div class="stat-value">
+                    {% if total_vehicles == 0 %}2*{% else %}—{% endif %}
+                </div>
+                <div class="stat-label">Vehicles: Exchange</div>
+                {% if total_vehicles == 0 %}<div class="demo-badge mt-2">demo</div>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Vehicle List + Chart Row ─────────────────────────── -->
+    <div class="row g-4">
+        <!-- Recent vehicles -->
+        <div class="col-lg-7">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0">Recent Vehicles</h5>
+                    <a href="{% url 'vehicles:vehicle_list' %}" class="btn btn-surface btn-sm">View All</a>
+                </div>
+
+                {% if vehicles %}
+                <div class="table-responsive">
+                    <table class="alp-table">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Year</th>
+                                <th>Mileage</th>
+                                <th>Fuel</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in vehicles %}
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold text-white">{{ v.brand }} {{ v.model }}</div>
+                                </td>
+                                <td><span class="text-muted">{{ v.manufacturing_year }}</span></td>
+                                <td><span class="text-muted">{{ v.current_mileage|floatformat:0 }} km</span></td>
+                                <td>
+                                    <span class="badge bg-dark border border-secondary text-muted">
+                                        {{ v.get_fuel_type_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'analytics:vehicle_outlook' v.pk %}"
+                                       class="btn btn-sm btn-surface">
+                                        Analyse <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-car-front display-4 text-muted mb-3 d-block"></i>
+                    <p class="text-muted mb-3">No vehicles registered yet.</p>
+                    <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp">
+                        Register Your First Vehicle
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Fleet health chart (demo) -->
+        <div class="col-lg-5">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0">Fleet Status Distribution</h5>
+                    <span class="demo-badge"><i class="bi bi-info-circle"></i>Demo</span>
+                </div>
+                <div id="fleetStatusChart" style="height: 280px;"></div>
+                <p class="text-dim small text-center mt-2 mb-0">
+                    * Demonstration chart — will reflect real data after vehicle registration.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ML Status Row ───────────────────────────────────── -->
+    <div class="row g-4 mt-0">
+        <div class="col-12">
+            <div class="alp-card">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-cpu text-emerald fs-5"></i>
+                    <h5 class="mb-0">ML Engine Status</h5>
+                </div>
+                <div class="row g-3">
+                    {% for module in ml_modules %}
+                    <div class="col-md-4 col-lg-2">
+                        <div class="p-3 rounded-alp border-alp text-center">
+                            <div class="{% if module.ready %}text-emerald{% else %}text-warning{% endif %} fs-5 mb-1">
+                                <i class="bi bi-{% if module.ready %}check-circle-fill{% else %}clock{% endif %}"></i>
+                            </div>
+                            <div class="small fw-semibold text-white">{{ module.name }}</div>
+                            <div class="text-dim" style="font-size: 0.72rem;">{{ module.status }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {% for m in "123456"|make_list %}
+                    <div class="col-md-4 col-lg-2">
+                        <div class="p-3 rounded-alp border-alp text-center">
+                            <div class="text-warning fs-5 mb-1"><i class="bi bi-clock"></i></div>
+                            <div class="small fw-semibold text-white">
+                                {% if m == "1" %}Resale Predictor
+                                {% elif m == "2" %}Depreciation
+                                {% elif m == "3" %}Health Score
+                                {% elif m == "4" %}Maintenance Risk
+                                {% elif m == "5" %}Cost Estimator
+                                {% elif m == "6" %}Decision Engine
+                                {% endif %}
+                            </div>
+                            <div class="text-dim" style="font-size: 0.72rem;">
+                                {% if m == "3" or m == "4" or m == "5" or m == "6" %}Active (rule-based){% else %}Awaiting training data{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                <p class="text-dim small mt-3 mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    ML modules marked "Awaiting training data" will activate once a validated dataset
+                    is loaded and the model is trained. See <code>ml_engine/README.md</code>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fleet Status Donut Chart (demonstration data)
+var data = [{
+    type: 'pie',
+    hole: 0.6,
+    values: [7, 3, 1, 1],
+    labels: ['Keep', 'Monitor', 'Sell', 'Exchange'],
+    marker: {
+        colors: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444']
+    },
+    textinfo: 'label+percent',
+    textfont: { color: '#e2e8f0', size: 11 },
+    hoverinfo: 'label+value',
+}];
+
+var layout = {
+    paper_bgcolor: 'transparent',
+    plot_bgcolor: 'transparent',
+    showlegend: false,
+    margin: { t: 10, b: 10, l: 10, r: 10 },
+    font: { color: '#94a3b8' },
+    annotations: [{
+        font: { size: 14, color: '#e2e8f0', family: 'Space Grotesk' },
+        showarrow: false,
+        text: '<b>12</b><br><span style="font-size:10px">Vehicles</span>',
+        x: 0.5, y: 0.5
+    }]
+};
+
+Plotly.newPlot('fleetStatusChart', data, layout, {
+    displayModeBar: false,
+    responsive: true
+});
+</script>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Register Vehicle — AutoLifecycle Predictor{% endblock %}
+
+{% block content %}
+<div class="page-header mb-0">
+    <div class="container">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <a href="{% url 'vehicles:vehicle_list' %}" class="text-muted small text-decoration-none">
+                <i class="bi bi-arrow-left me-1"></i>All Vehicles
+            </a>
+        </div>
+        <div class="section-label">New Vehicle</div>
+        <h1 class="mb-1">Register a Vehicle</h1>
+        <p class="text-muted mb-0">Provide your vehicle's details to begin lifecycle analysis.</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <form method="post" novalidate class="needs-validation">
+                {% csrf_token %}
+
+                <!-- ── Vehicle Identity ─────────────────── -->
+                <div class="alp-card mb-4">
+                    <h5 class="mb-4 d-flex align-items-center gap-2">
+                        <span class="feature-number">1</span>
+                        Vehicle Identity
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.brand.label }}</label>
+                            {{ form.brand }}
+                            {% if form.brand.errors %}
+                            <div class="invalid-feedback d-block">{{ form.brand.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.model.label }}</label>
+                            {{ form.model }}
+                            {% if form.model.errors %}
+                            <div class="invalid-feedback d-block">{{ form.model.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.manufacturing_year.label }}</label>
+                            {{ form.manufacturing_year }}
+                            {% if form.manufacturing_year.errors %}
+                            <div class="invalid-feedback d-block">{{ form.manufacturing_year.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.fuel_type.label }}</label>
+                            {{ form.fuel_type }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.transmission.label }}</label>
+                            {{ form.transmission }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Financial Details ───────────────── -->
+                <div class="alp-card mb-4">
+                    <h5 class="mb-4 d-flex align-items-center gap-2">
+                        <span class="feature-number">2</span>
+                        Financial Details
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.purchase_price.label }}</label>
+                            {{ form.purchase_price }}
+                            <div class="form-text">{{ form.purchase_price.help_text }}</div>
+                            {% if form.purchase_price.errors %}
+                            <div class="invalid-feedback d-block">{{ form.purchase_price.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.repair_expenditure.label }}</label>
+                            {{ form.repair_expenditure }}
+                            <div class="form-text">{{ form.repair_expenditure.help_text }}</div>
+                            {% if form.repair_expenditure.errors %}
+                            <div class="invalid-feedback d-block">{{ form.repair_expenditure.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Usage ───────────────────────────── -->
+                <div class="alp-card mb-4">
+                    <h5 class="mb-4 d-flex align-items-center gap-2">
+                        <span class="feature-number">3</span>
+                        Usage
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.current_mileage.label }}</label>
+                            {{ form.current_mileage }}
+                            {% if form.current_mileage.errors %}
+                            <div class="invalid-feedback d-block">{{ form.current_mileage.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.annual_km_driven.label }}</label>
+                            {{ form.annual_km_driven }}
+                            {% if form.annual_km_driven.errors %}
+                            <div class="invalid-feedback d-block">{{ form.annual_km_driven.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Maintenance History ─────────────── -->
+                <div class="alp-card mb-4">
+                    <h5 class="mb-4 d-flex align-items-center gap-2">
+                        <span class="feature-number">4</span>
+                        Maintenance History
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.service_records_count.label }}</label>
+                            {{ form.service_records_count }}
+                            {% if form.service_records_count.errors %}
+                            <div class="invalid-feedback d-block">{{ form.service_records_count.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.months_since_last_service.label }}</label>
+                            {{ form.months_since_last_service }}
+                            <div class="form-text">{{ form.months_since_last_service.help_text }}</div>
+                            {% if form.months_since_last_service.errors %}
+                            <div class="invalid-feedback d-block">{{ form.months_since_last_service.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Submit ──────────────────────────── -->
+                <div class="d-flex gap-3 justify-content-end">
+                    <a href="{% url 'vehicles:vehicle_list' %}" class="btn btn-surface">Cancel</a>
+                    <button type="submit" class="btn btn-primary-alp px-4">
+                        <i class="bi bi-check-circle me-2"></i>Register Vehicle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
