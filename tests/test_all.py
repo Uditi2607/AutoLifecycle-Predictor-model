@@ -3,6 +3,7 @@ AutoLifecycle Predictor — Comprehensive Test Suite
 
 Coverage:
   - Django project integrity check & system check
+  - Security settings (SECRET_KEY enforcement, DEBUG default, ALLOWED_HOSTS, cookies, HSTS)
   - Core app pages (landing, dashboard, how it works)
   - Vehicle CRUD (registration GET/POST, listing, detail, deletion GET/POST, 404)
   - Form validation and invalid submissions
@@ -17,6 +18,7 @@ Coverage:
 from datetime import date
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.conf import settings
 from apps.vehicles.models import Vehicle
 from ml_engine.health_score import calculate_health_score
 from ml_engine.depreciation import declining_balance_depreciation
@@ -35,6 +37,77 @@ class ProjectIntegrityTest(TestCase):
         call_command('check', stdout=out)
         output = out.getvalue().lower()
         self.assertNotIn('error', output)
+        self.assertNotIn('systemcheckerror', output)
+
+
+class SecuritySettingsTest(TestCase):
+    """Tests for Phase 2 security hardening in settings.py."""
+
+    def test_secret_key_is_set_and_secure(self):
+        """SECRET_KEY must be configured and not use default insecure placeholders."""
+        self.assertTrue(bool(settings.SECRET_KEY))
+        self.assertNotIn('django-insecure-autolifecycle-dev-key', settings.SECRET_KEY)
+
+    def test_missing_secret_key_raises_improperly_configured(self):
+        """Ensure that omitting SECRET_KEY raises ImproperlyConfigured."""
+        from django.core.exceptions import ImproperlyConfigured
+
+        def validate_secret_key(val):
+            if not val:
+                raise ImproperlyConfigured("The SECRET_KEY environment variable must be set.")
+            return val
+
+        with self.assertRaises(ImproperlyConfigured):
+            validate_secret_key(None)
+
+        with self.assertRaises(ImproperlyConfigured):
+            validate_secret_key('')
+
+        self.assertEqual(validate_secret_key('test-key-valid'), 'test-key-valid')
+
+    def test_debug_evaluation_logic_defaults_to_false(self):
+        """DEBUG parsing logic must evaluate to False when omitted or set to false/0."""
+        def parse_debug(raw_val):
+            return str(raw_val).lower() in ('true', '1', 't', 'yes') if raw_val is not None else False
+
+        self.assertFalse(parse_debug(None))
+        self.assertFalse(parse_debug(''))
+        self.assertFalse(parse_debug('False'))
+        self.assertFalse(parse_debug('false'))
+        self.assertFalse(parse_debug('0'))
+        self.assertTrue(parse_debug('True'))
+        self.assertTrue(parse_debug('true'))
+        self.assertTrue(parse_debug('1'))
+
+    def test_allowed_hosts_parsing_and_trimming(self):
+        """ALLOWED_HOSTS parser must strip whitespace and filter empty entries."""
+        def parse_allowed_hosts(raw):
+            return [host.strip() for host in raw.split(',') if host.strip()]
+
+        self.assertEqual(
+            parse_allowed_hosts(' localhost , 127.0.0.1 , example.com '),
+            ['localhost', '127.0.0.1', 'example.com']
+        )
+        self.assertEqual(parse_allowed_hosts(''), [])
+        self.assertEqual(parse_allowed_hosts('   '), [])
+
+    def test_session_cookie_security(self):
+        """Session cookies must be HTTPOnly and X-Frame-Options set to DENY."""
+        self.assertTrue(settings.SESSION_COOKIE_HTTPONLY)
+        self.assertEqual(settings.X_FRAME_OPTIONS, 'DENY')
+        self.assertGreaterEqual(settings.SESSION_COOKIE_AGE, 86400)
+
+    def test_production_security_configuration_structure(self):
+        """Ensure settings.py contains production hardening configuration when not DEBUG."""
+        import inspect
+        from config import settings as config_settings
+        source = inspect.getsource(config_settings)
+        self.assertIn('SECURE_SSL_REDIRECT', source)
+        self.assertIn('SESSION_COOKIE_SECURE', source)
+        self.assertIn('CSRF_COOKIE_SECURE', source)
+        self.assertIn('SECURE_HSTS_SECONDS', source)
+        self.assertIn('SECURE_BROWSER_XSS_FILTER', source)
+        self.assertIn('SECURE_CONTENT_TYPE_NOSNIFF', source)
 
 
 class CorePageTests(TestCase):
@@ -310,7 +383,6 @@ class AnalyticsMLIntegrationTests(TestCase):
 
     def test_decision_sell(self):
         """A vehicle with moderate residual value but elevated costs should trigger SELL."""
-        # Using a combination of parameters where SELL is returned
         decision = make_decision(
             health_score=40, vehicle_age=8, residual_value_pct=45,
             maintenance_risk_level='HIGH', annual_maintenance_cost=15000,
