@@ -3,69 +3,111 @@
 
 {% block content %}
 <div class="page-header">
-    <div class="container">
-        <div class="d-flex align-items-center justify-content-between">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div>
-                <div class="section-label">Analytics</div>
+                <div class="section-label">Analytics &amp; Planning</div>
                 <h1 class="mb-1">Fleet Insights</h1>
-                <p class="text-muted mb-0">Multi-vehicle analysis and replacement planning overview.</p>
+                <p class="text-muted mb-0">Multi-vehicle lifecycle analysis, fleet health distribution, and replacement planning.</p>
             </div>
-            {% if is_prototype %}
-            <span class="demo-badge align-self-start">
-                <i class="bi bi-info-circle"></i>
-                Rule-Based Prototype
-            </span>
-            {% endif %}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge px-3 py-2 rounded-pill" style="background: rgba(16,185,129,0.15); color: var(--alp-emerald); border: 1px solid var(--alp-emerald);">
+                    <i class="bi bi-cpu me-1"></i>ML Scoring Active
+                </span>
+                <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Register Vehicle
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="container-fluid px-4 py-4">
 
-    {% if vehicles %}
-    <!-- Stats Row -->
+    {% if total > 0 %}
+    <!-- ── Summary KPI Cards ─────────────────────────────── -->
     <div class="row g-4 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card">
                 <div class="stat-icon emerald"><i class="bi bi-car-front"></i></div>
                 <div class="stat-value">{{ total }}</div>
-                <div class="stat-label">Total Vehicles</div>
+                <div class="stat-label">Total Fleet Vehicles</div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card">
-                <div class="stat-icon blue"><i class="bi bi-calendar"></i></div>
-                <div class="stat-value">
-                    {% with total_age=0 %}
-                    —
-                    {% endwith %}
-                </div>
-                <div class="stat-label">Avg Vehicle Age</div>
+                <div class="stat-icon blue"><i class="bi bi-speedometer2"></i></div>
+                <div class="stat-value">{{ avg_mileage|floatformat:0 }} <small class="text-dim fs-6">km</small></div>
+                <div class="stat-label">Average Fleet Mileage</div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card">
-                <div class="stat-icon amber"><i class="bi bi-speedometer2"></i></div>
-                <div class="stat-value">—</div>
-                <div class="stat-label">Avg Mileage</div>
+                <div class="stat-icon amber"><i class="bi bi-calendar"></i></div>
+                <div class="stat-value">{{ avg_age }} <small class="text-dim fs-6">yrs</small></div>
+                <div class="stat-label">Average Vehicle Age</div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card">
-                <div class="stat-icon red"><i class="bi bi-tools"></i></div>
-                <div class="stat-value">—</div>
-                <div class="stat-label">Avg Repair Cost</div>
+                <div class="stat-icon red"><i class="bi bi-heart-pulse"></i></div>
+                <div class="stat-value">{{ avg_health }} <small class="text-dim fs-6">/100</small></div>
+                <div class="stat-label">Average Health Score</div>
             </div>
         </div>
     </div>
 
-    <!-- Fleet table -->
+    <!-- ── Decision Distribution Overview ────────────────── -->
+    <div class="alp-card mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <h5 class="mb-0">Fleet Decision Distribution</h5>
+            <span class="text-muted small">Based on real-time 7-signal ML evaluations</span>
+        </div>
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <div class="p-3 rounded-alp d-flex align-items-center justify-content-between" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
+                    <div>
+                        <div class="text-emerald small fw-semibold text-uppercase tracking-wide">KEEP</div>
+                        <div class="fs-4 fw-bold text-white">{{ decision_counts.KEEP }}</div>
+                    </div>
+                    <i class="bi bi-check-circle-fill text-emerald fs-2"></i>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="p-3 rounded-alp d-flex align-items-center justify-content-between" style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25);">
+                    <div>
+                        <div class="text-warning small fw-semibold text-uppercase tracking-wide">MONITOR</div>
+                        <div class="fs-4 fw-bold text-white">{{ decision_counts.MONITOR }}</div>
+                    </div>
+                    <i class="bi bi-eye-fill text-warning fs-2"></i>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="p-3 rounded-alp d-flex align-items-center justify-content-between" style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25);">
+                    <div>
+                        <div class="text-primary small fw-semibold text-uppercase tracking-wide">SELL</div>
+                        <div class="fs-4 fw-bold text-white">{{ decision_counts.SELL }}</div>
+                    </div>
+                    <i class="bi bi-currency-rupee text-primary fs-2"></i>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="p-3 rounded-alp d-flex align-items-center justify-content-between" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);">
+                    <div>
+                        <div class="text-danger small fw-semibold text-uppercase tracking-wide">EXCHANGE</div>
+                        <div class="fs-4 fw-bold text-white">{{ decision_counts.EXCHANGE }}</div>
+                    </div>
+                    <i class="bi bi-arrow-left-right text-danger fs-2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Fleet Table with ML Intelligence ─────────────── -->
     <div class="alp-card mb-4">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="mb-0">Fleet Summary</h5>
-            <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-sm btn-primary-alp">
-                <i class="bi bi-plus-circle me-1"></i>Add Vehicle
-            </a>
+            <h5 class="mb-0">Fleet Telemetry &amp; Recommendations</h5>
+            <span class="text-dim small">{{ total }} vehicle{{ total|pluralize }} monitored</span>
         </div>
         <div class="table-responsive">
             <table class="alp-table">
@@ -73,40 +115,51 @@
                     <tr>
                         <th>Vehicle</th>
                         <th>Year</th>
-                        <th>Age</th>
                         <th>Mileage</th>
-                        <th>Fuel</th>
-                        <th>Repair Spend</th>
-                        <th>Last Service</th>
-                        <th>Analysis</th>
+                        <th>Health Score</th>
+                        <th>Maint. Risk</th>
+                        <th>Est. Value</th>
+                        <th>Decision</th>
+                        <th class="text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for v in vehicles %}
+                    {% for row in fleet_rows %}
                     <tr>
                         <td>
-                            <div class="fw-semibold text-white">{{ v.brand }} {{ v.model }}</div>
+                            <div class="fw-semibold text-white">{{ row.vehicle.brand }} {{ row.vehicle.model }}</div>
+                            <small class="text-dim">{{ row.vehicle.get_fuel_type_display }} &bull; {{ row.vehicle.get_transmission_display }}</small>
                         </td>
-                        <td><span class="text-muted">{{ v.manufacturing_year }}</span></td>
+                        <td><span class="text-muted">{{ row.vehicle.manufacturing_year }} ({{ row.vehicle.age_years }}yr)</span></td>
+                        <td><span class="text-muted">{{ row.vehicle.current_mileage|floatformat:0 }} km</span></td>
                         <td>
-                            <span class="{% if v.age_years <= 5 %}text-emerald{% elif v.age_years <= 9 %}text-warning{% else %}text-danger{% endif %}">
-                                {{ v.age_years }}yr
+                            {% if row.health_score != None %}
+                            <span class="fw-semibold text-white">{{ row.health_score }}</span>
+                            <small class="text-dim">({{ row.health_grade }})</small>
+                            {% else %}
+                            <span class="text-dim">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill px-2 py-1 small"
+                                  style="background: {% if row.risk_level == 'LOW' %}rgba(16,185,129,0.15); color: var(--alp-emerald);{% elif row.risk_level == 'MEDIUM' %}rgba(245,158,11,0.15); color: var(--alp-amber);{% elif row.risk_level == 'HIGH' %}rgba(249,115,22,0.15); color: #f97316;{% else %}rgba(239,68,68,0.15); color: var(--alp-red);{% endif %};">
+                                {{ row.risk_level }}
                             </span>
                         </td>
-                        <td><span class="text-muted">{{ v.current_mileage|floatformat:0 }} km</span></td>
                         <td>
-                            <span class="badge bg-dark border border-secondary text-muted">
-                                {{ v.get_fuel_type_display }}
-                            </span>
-                        </td>
-                        <td><span class="text-muted">₹{{ v.repair_expenditure|floatformat:0 }}</span></td>
-                        <td>
-                            <span class="{% if v.months_since_last_service > 12 %}text-danger{% elif v.months_since_last_service > 6 %}text-warning{% else %}text-emerald{% endif %}">
-                                {{ v.months_since_last_service }}mo
-                            </span>
+                            {% if row.current_value %}
+                            <span class="text-white fw-semibold">₹{{ row.current_value|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="text-dim">—</span>
+                            {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'analytics:vehicle_outlook' v.pk %}"
+                            <span class="rec-badge {{ row.decision_color }} py-1 px-3" style="font-size: 0.8rem;">
+                                {{ row.decision }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'analytics:vehicle_outlook' row.vehicle.pk %}"
                                class="btn btn-sm btn-surface">
                                 Outlook <i class="bi bi-arrow-right ms-1"></i>
                             </a>
@@ -123,24 +176,22 @@
     <div class="text-center py-5">
         <i class="bi bi-graph-up-arrow display-1 text-muted mb-4 d-block"></i>
         <h3 class="text-white mb-2">No fleet data yet</h3>
-        <p class="text-muted mb-4">Register vehicles to access fleet-level insights and replacement planning.</p>
+        <p class="text-muted mb-4">Register vehicles to access fleet-level insights, health distribution, and replacement planning.</p>
         <a href="{% url 'vehicles:vehicle_register' %}" class="btn btn-primary-alp btn-lg">
             <i class="bi bi-plus-circle me-2"></i>Register a Vehicle
         </a>
     </div>
     {% endif %}
 
-    <!-- ML Roadmap note -->
+    <!-- ML Information Card -->
     <div class="alp-card mt-4">
         <div class="d-flex align-items-start gap-3">
-            <i class="bi bi-cpu text-emerald fs-5 mt-1"></i>
+            <i class="bi bi-cpu text-emerald fs-4 mt-1"></i>
             <div>
-                <div class="fw-semibold text-white mb-1">Fleet Analytics Roadmap</div>
+                <div class="fw-semibold text-white mb-1">Active Machine Learning Decision Engine</div>
                 <p class="text-muted small mb-0">
-                    Full fleet intelligence — automated health scoring across all vehicles, optimal replacement
-                    scheduling, combined cost-of-ownership projections and cross-vehicle comparison charts —
-                    will be enabled once the ML models are trained on verified data.
-                    See <code>ml_engine/</code> and <strong>How It Works</strong> for dataset requirements.
+                    Fleet scoring aggregates multi-signal health computations, declining-balance depreciation curves, and maintenance risk heuristics for each asset.
+                    Supervised resale price prediction model training will be enabled once raw vehicle sales data is ingested.
                 </p>
             </div>
         </div>

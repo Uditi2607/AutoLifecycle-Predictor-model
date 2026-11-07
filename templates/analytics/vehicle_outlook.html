@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-header">
-    <div class="container">
+    <div class="container-fluid px-4">
         <div class="d-flex align-items-center gap-2 mb-2">
             <a href="{% url 'vehicles:vehicle_list' %}" class="text-muted small text-decoration-none">
                 <i class="bi bi-arrow-left me-1"></i>All Vehicles
@@ -15,171 +15,396 @@
         </div>
         <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
             <div>
-                <div class="section-label">Vehicle Outlook</div>
+                <div class="section-label">Vehicle Lifecycle Analytics</div>
                 <h1 class="mb-1">{{ vehicle.brand }} {{ vehicle.model }}</h1>
-                <p class="text-muted mb-0">{{ vehicle.manufacturing_year }} &bull; {{ vehicle.get_fuel_type_display }} &bull; {{ vehicle.age_years }} years old</p>
+                <p class="text-muted mb-0">
+                    {{ vehicle.manufacturing_year }} &bull;
+                    {{ vehicle.get_fuel_type_display }} &bull;
+                    {{ vehicle.get_transmission_display }} &bull;
+                    {{ vehicle.current_mileage|floatformat:0 }} km &bull;
+                    {{ vehicle.age_years }} year{{ vehicle.age_years|pluralize }} old
+                </p>
             </div>
-            {% if is_prototype %}
-            <span class="demo-badge align-self-start">
-                <i class="bi bi-info-circle"></i>
-                Rule-Based Prototype — ML not yet trained
-            </span>
-            {% endif %}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge px-3 py-2 rounded-pill" style="background: rgba(16,185,129,0.15); color: var(--alp-emerald); border: 1px solid var(--alp-emerald);">
+                    <i class="bi bi-cpu me-1"></i>ML Engine Active
+                </span>
+                <a href="{% url 'vehicles:vehicle_detail' vehicle.pk %}" class="btn btn-surface btn-sm">
+                    <i class="bi bi-gear me-1"></i>Vehicle Details
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="container-fluid px-4 py-4">
 
-    <!-- ── Top Decision Row ──────────────────────────────── -->
+    <!-- ── 1. Top Decision & Key Signal Cards ─────────────── -->
     <div class="row g-4 mb-4">
-        <!-- Recommendation -->
+        <!-- Card 1: Lifecycle Recommendation -->
         <div class="col-lg-4">
-            <div class="alp-card h-100 text-center">
-                <div class="text-muted small mb-3 text-uppercase tracking-wide">Lifecycle Decision</div>
-                <div class="mb-3">
-                    <span class="rec-badge {{ rec_color }}">
-                        <i class="bi bi-{% if recommendation == 'KEEP' %}check-circle-fill{% elif recommendation == 'MONITOR' %}eye-fill{% else %}arrow-left-right{% endif %}"></i>
-                        {{ recommendation }}
+            <div class="alp-card h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small text-uppercase tracking-wide">Lifecycle Decision</span>
+                    <span class="badge rounded-pill bg-dark border border-secondary text-dim small">
+                        Review in {{ next_review_months }} mo{{ next_review_months|pluralize }}
                     </span>
                 </div>
-                <p class="text-muted small">{{ rec_desc }}</p>
-                {% if is_prototype %}
-                <div class="p-2 rounded-alp mt-3" style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);">
-                    <small class="text-warning">
-                        <i class="bi bi-exclamation-triangle me-1"></i>
-                        Prototype estimate — not from trained ML model.
-                    </small>
+
+                <div class="text-center py-2 mb-3">
+                    <span class="rec-badge {{ rec_color }} fs-5">
+                        <i class="bi bi-{{ rec_icon }}"></i>
+                        {{ recommendation }}
+                    </span>
+                    <div class="mt-2 text-muted small">
+                        Confidence: <strong class="text-white">{{ decision_confidence }}</strong>
+                        <span class="text-dim">({{ decision_score }}% signal alignment)</span>
+                    </div>
+                </div>
+
+                <p class="text-white small mb-3">{{ rec_desc }}</p>
+
+                <div class="mt-auto pt-3 border-top" style="border-color: var(--alp-border) !important;">
+                    <div class="text-muted small fw-semibold mb-2">
+                        <i class="bi bi-list-check text-emerald me-1"></i>Decision Signals &amp; Rationale:
+                    </div>
+                    <ul class="list-unstyled mb-0 small">
+                        {% for reason in decision_reasons %}
+                        <li class="py-1 text-muted d-flex align-items-start gap-2">
+                            <span>{{ reason }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Composite Health Score -->
+        <div class="col-lg-4">
+            <div class="alp-card h-100 d-flex flex-column text-center">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small text-uppercase tracking-wide">Vehicle Health Score</span>
+                    <span class="badge rounded-pill bg-dark border border-secondary text-dim small">5-Signal Weighted</span>
+                </div>
+
+                <div class="health-ring-wrap my-2">
+                    <svg viewBox="0 0 36 36" style="width: 150px; height: 150px; transform: rotate(-90deg);">
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--alp-surface-3)" stroke-width="2.8"/>
+                        <circle cx="18" cy="18" r="15.9" fill="none"
+                                stroke="{% if health_score >= 80 %}#10b981{% elif health_score >= 65 %}#3b82f6{% elif health_score >= 50 %}#f59e0b{% else %}#ef4444{% endif %}"
+                                stroke-width="2.8"
+                                stroke-dasharray="{{ health_score }}, 100"
+                                stroke-linecap="round"/>
+                    </svg>
+                    <div class="health-ring-label">
+                        <div class="fw-bold text-white" style="font-size: 1.85rem; line-height: 1;">{{ health_score }}</div>
+                        <div class="text-muted small" style="font-size: 0.75rem;">/ 100</div>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <span class="fw-semibold px-3 py-1 rounded-pill small"
+                          style="background: rgba(255,255,255,0.06); border: 1px solid var(--alp-border); color: {% if health_score >= 80 %}var(--alp-emerald){% elif health_score >= 65 %}var(--alp-blue){% elif health_score >= 50 %}var(--alp-amber){% else %}var(--alp-red){% endif %};">
+                        {{ health_grade }}
+                    </span>
+                </div>
+
+                <p class="text-muted small mt-2 mb-0">{{ health_summary }}</p>
+
+                {% if health_flags %}
+                <div class="mt-3 text-start">
+                    {% for flag in health_flags %}
+                    <div class="p-2 rounded-alp mb-1 small" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5;">
+                        {{ flag }}
+                    </div>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Health Score -->
+        <!-- Card 3: Financial & Valuation Overview -->
         <div class="col-lg-4">
-            <div class="alp-card h-100 text-center">
-                <div class="text-muted small mb-3 text-uppercase">Health Score</div>
-                <div style="position: relative; width: 160px; height: 160px; margin: 0 auto 1rem;">
-                    <svg viewBox="0 0 36 36" style="width: 160px; height: 160px; transform: rotate(-90deg);">
-                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--alp-surface-3)" stroke-width="3"/>
-                        <circle cx="18" cy="18" r="15.9" fill="none"
-                                stroke="{% if health_score >= 70 %}#10b981{% elif health_score >= 45 %}#f59e0b{% else %}#ef4444{% endif %}"
-                                stroke-width="3"
-                                stroke-dasharray="{{ health_score }}, 100"
-                                stroke-linecap="round"/>
-                    </svg>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                        <div class="fw-bold text-white" style="font-size: 1.75rem; line-height: 1;">{{ health_score }}</div>
-                        <div class="text-muted" style="font-size: 0.7rem;">/100</div>
+            <div class="alp-card h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small text-uppercase tracking-wide">Financial Overview</span>
+                    <span class="badge rounded-pill bg-dark border border-secondary text-dim small">Declining Balance</span>
+                </div>
+
+                <div class="p-3 rounded-alp mb-3" style="background: var(--alp-surface-2); border: 1px solid var(--alp-border);">
+                    <div class="text-dim small mb-1">Estimated Residual Value</div>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <h2 class="text-white mb-0">₹{{ current_value|floatformat:0 }}</h2>
+                        <span class="text-emerald small fw-semibold">({{ residual_pct }}% retained)</span>
+                    </div>
+                    <div class="text-dim small mt-1">Original purchase: ₹{{ vehicle.purchase_price|floatformat:0 }}</div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <div class="text-dim small">Depreciation Lost</div>
+                            <div class="fw-semibold text-danger">{{ total_depreciation_pct }}%</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <div class="text-dim small">Est. Annual Service</div>
+                            <div class="fw-semibold text-warning">₹{{ maintenance_annual_cost|floatformat:0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <div class="text-dim small">Cumulative Repairs</div>
+                            <div class="fw-semibold text-white">₹{{ vehicle.repair_expenditure|floatformat:0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <div class="text-dim small">Service Records</div>
+                            <div class="fw-semibold text-white">{{ vehicle.service_records_count }} logs</div>
+                        </div>
                     </div>
                 </div>
-                <div class="text-muted small">
-                    {% if health_score >= 70 %}
-                    <span class="text-emerald fw-semibold">Good condition</span>
-                    {% elif health_score >= 45 %}
-                    <span style="color: var(--alp-amber);" class="fw-semibold">Fair condition</span>
-                    {% else %}
-                    <span style="color: var(--alp-red);" class="fw-semibold">Poor condition</span>
+
+                <div class="mt-auto pt-2 border-top" style="border-color: var(--alp-border) !important;">
+                    <div class="d-flex justify-content-between align-items-center text-muted small">
+                        <span>Last service:</span>
+                        <span class="{% if vehicle.months_since_last_service > 12 %}text-danger fw-semibold{% elif vehicle.months_since_last_service > 6 %}text-warning{% else %}text-emerald{% endif %}">
+                            {{ vehicle.months_since_last_service }} month{{ vehicle.months_since_last_service|pluralize }} ago
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 2. Detailed Health Components & Maintenance Plan ─ -->
+    <div class="row g-4 mb-4">
+        <!-- 5-Component Health Breakdown -->
+        <div class="col-lg-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-line text-emerald me-2"></i>Health Component Breakdown</h5>
+                    <span class="badge bg-dark border border-secondary text-dim small">Normalized 0–100</span>
+                </div>
+                <p class="text-muted small mb-4">
+                    The overall health score combines five objective mechanical and maintenance indicators:
+                </p>
+
+                <!-- Age Score (20%) -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                        <span class="text-white">Vehicle Age (20% weight)</span>
+                        <span class="fw-semibold text-emerald">{{ health_components.age }} / 100</span>
+                    </div>
+                    <div class="alp-progress">
+                        <div class="alp-progress-bar" style="width: {{ health_components.age }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Mileage Score (25%) -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                        <span class="text-white">Mileage vs. Expected (25% weight)</span>
+                        <span class="fw-semibold text-emerald">{{ health_components.mileage }} / 100</span>
+                    </div>
+                    <div class="alp-progress">
+                        <div class="alp-progress-bar" style="width: {{ health_components.mileage }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Service Regularity (20%) -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                        <span class="text-white">Service Regularity (20% weight)</span>
+                        <span class="fw-semibold text-emerald">{{ health_components.service_regularity }} / 100</span>
+                    </div>
+                    <div class="alp-progress">
+                        <div class="alp-progress-bar" style="width: {{ health_components.service_regularity }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Repair Burden (20%) -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                        <span class="text-white">Repair Burden Ratio (20% weight)</span>
+                        <span class="fw-semibold text-emerald">{{ health_components.repair_burden }} / 100</span>
+                    </div>
+                    <div class="alp-progress">
+                        <div class="alp-progress-bar" style="width: {{ health_components.repair_burden }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Service Recency (15%) -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                        <span class="text-white">Service Recency (15% weight)</span>
+                        <span class="fw-semibold text-emerald">{{ health_components.service_recency }} / 100</span>
+                    </div>
+                    <div class="alp-progress">
+                        <div class="alp-progress-bar" style="width: {{ health_components.service_recency }}%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Risk & Action Plan -->
+        <div class="col-lg-6">
+            <div class="alp-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0"><i class="bi bi-tools text-emerald me-2"></i>Maintenance Assessment &amp; Actions</h5>
+                    <span class="badge rounded-pill px-3 py-1 text-uppercase fw-bold"
+                          style="background: {% if maintenance_risk_level == 'LOW' %}rgba(16,185,129,0.15); color: var(--alp-emerald); border: 1px solid var(--alp-emerald);{% elif maintenance_risk_level == 'MEDIUM' %}rgba(245,158,11,0.15); color: var(--alp-amber); border: 1px solid var(--alp-amber);{% elif maintenance_risk_level == 'HIGH' %}rgba(249,115,22,0.15); color: #f97316; border: 1px solid #f97316;{% else %}rgba(239,68,68,0.15); color: var(--alp-red); border: 1px solid var(--alp-red);{% endif %}">
+                        {{ maintenance_risk_level }} RISK ({{ maintenance_risk_score|floatformat:0 }}/100)
+                    </span>
+                </div>
+
+                <p class="text-muted small mb-3">{{ maintenance_summary }}</p>
+
+                <div class="text-muted small fw-semibold mb-2 text-uppercase tracking-wide">Recommended Actions:</div>
+                <div class="list-group list-group-flush mb-3">
+                    {% for action in maintenance_actions %}
+                    <div class="list-group-item bg-transparent border-0 px-0 py-2 d-flex align-items-start gap-2 text-muted small">
+                        <span>{{ action }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Exchange Trigger Analysis -->
+                <div class="p-3 rounded-alp mt-auto" style="background: var(--alp-surface-2); border: 1px solid var(--alp-border);">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold text-white small">Optimal Exchange Window</span>
+                        <span class="badge px-2 py-1 rounded-pill small"
+                              style="background: {% if exchange_window.urgency == 'high' %}rgba(239,68,68,0.2); color: var(--alp-red);{% elif exchange_window.urgency == 'medium' %}rgba(245,158,11,0.2); color: var(--alp-amber);{% else %}rgba(16,185,129,0.2); color: var(--alp-emerald);{% endif %}">
+                            {{ exchange_window.urgency|upper }} URGENCY
+                        </span>
+                    </div>
+                    <div class="text-white small mb-1">{{ exchange_window.exchange_window }}</div>
+                    {% if exchange_window.triggers %}
+                    <div class="text-dim small mt-1">
+                        {% for t in exchange_window.triggers %}
+                        <div>&bull; {{ t }}</div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
-
-        <!-- Quick Stats -->
-        <div class="col-lg-4">
-            <div class="alp-card h-100">
-                <div class="text-muted small mb-3 text-uppercase">Key Metrics</div>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="text-dim small mb-1">Purchase Price</div>
-                        <div class="text-white fw-semibold">₹{{ vehicle.purchase_price|floatformat:0 }}</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="text-dim small mb-1">Vehicle Age</div>
-                        <div class="text-white fw-semibold">{{ vehicle.age_years }} yr{{ vehicle.age_years|pluralize }}</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="text-dim small mb-1">Mileage</div>
-                        <div class="text-white fw-semibold">{{ vehicle.current_mileage|floatformat:0 }} km</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="text-dim small mb-1">Repair Spend</div>
-                        <div class="text-white fw-semibold">₹{{ vehicle.repair_expenditure|floatformat:0 }}</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="text-dim small mb-1">Service Records</div>
-                        <div class="text-white fw-semibold">{{ vehicle.service_records_count }}</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="text-dim small mb-1">Last Serviced</div>
-                        <div class="text-white fw-semibold">{{ vehicle.months_since_last_service }} mo ago</div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- ── Depreciation Chart ────────────────────────────── -->
+    <!-- ── 3. Depreciation Trajectory Chart ──────────────── -->
     <div class="row g-4 mb-4">
         <div class="col-12">
             <div class="alp-card">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="mb-0">Estimated Depreciation Curve</h5>
-                    <span class="demo-badge">
-                        <i class="bi bi-info-circle"></i>
-                        Rule-Based Estimate
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <div>
+                        <h5 class="mb-0">Depreciation Curve &amp; Residual Value Trajectory</h5>
+                        <p class="text-muted small mb-0">Declining-balance lifecycle model tailored for {{ vehicle.get_fuel_type_display }} vehicles.</p>
+                    </div>
+                    <span class="badge rounded-pill bg-dark border border-secondary text-dim small">
+                        Trajectory: Purchase to Year + 15
                     </span>
                 </div>
-                <div id="depreciationChart" style="height: 320px;"></div>
-                <p class="text-dim small text-center mt-2 mb-0">
-                    * Depreciation curve uses declining-balance model. Will be replaced with ML forecast after model training.
-                </p>
+                <div id="depreciationChart" style="height: 340px;"></div>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2 pt-2 border-top" style="border-color: var(--alp-border) !important;">
+                    <span class="text-dim small">
+                        <i class="bi bi-info-circle me-1"></i>Yellow dashed marker represents current vehicle age ({{ vehicle.age_years }} yr).
+                    </span>
+                    <span class="text-dim small">
+                        Annual depreciation rate: Year 1 ~18%, Years 2–5 ~10%, Years 6+ ~5–7%.
+                    </span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ── Analysis Notes ────────────────────────────────── -->
+    <!-- ── 4. Resale Model Status & Architecture Info ───── -->
     <div class="row g-4">
         <div class="col-lg-6">
             <div class="alp-card h-100">
-                <h5 class="mb-3"><i class="bi bi-tools me-2 text-emerald"></i>Maintenance Overview</h5>
-                <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: var(--alp-border) !important;">
-                    <span class="text-muted small">Months since service</span>
-                    <span class="fw-semibold text-white">{{ vehicle.months_since_last_service }}</span>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0"><i class="bi bi-cpu text-emerald me-2"></i>ML Resale Price Predictor</h5>
+                    {% if resale_model_ready %}
+                    <span class="badge px-3 py-1 rounded-pill" style="background: rgba(16,185,129,0.15); color: var(--alp-emerald); border: 1px solid var(--alp-emerald);">
+                        Model Trained
+                    </span>
+                    {% else %}
+                    <span class="badge px-3 py-1 rounded-pill" style="background: rgba(245,158,11,0.15); color: var(--alp-amber); border: 1px solid var(--alp-amber);">
+                        Awaiting Training Data
+                    </span>
+                    {% endif %}
                 </div>
-                <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: var(--alp-border) !important;">
-                    <span class="text-muted small">Service records</span>
-                    <span class="fw-semibold text-white">{{ vehicle.service_records_count }}</span>
+
+                {% if resale_model_ready %}
+                <div class="p-3 rounded-alp mb-3" style="background: var(--alp-surface-2);">
+                    <div class="text-dim small">Predicted Resale Value</div>
+                    <h3 class="text-emerald mb-1">₹{{ resale_prediction.predicted_price|floatformat:0 }}</h3>
+                    <div class="text-muted small">{{ resale_prediction.confidence }}</div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center py-2">
-                    <span class="text-muted small">Total repair spend</span>
-                    <span class="fw-semibold text-white">₹{{ vehicle.repair_expenditure|floatformat:0 }}</span>
-                </div>
-                {% if vehicle.months_since_last_service > 12 %}
-                <div class="mt-3 p-3 rounded-alp" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
-                    <small class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>Service overdue — book a service soon.</small>
+                {% else %}
+                <p class="text-muted small mb-3">
+                    The supervised <strong class="text-white">Gradient Boosting Regressor</strong> for resale price prediction is configured in <code>ml_engine/train_resale.py</code>.
+                </p>
+                <div class="p-3 rounded-alp mb-3" style="background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2);">
+                    <div class="text-white small fw-semibold mb-1">
+                        <i class="bi bi-hourglass-split text-warning me-1"></i>Training Dataset Pending
+                    </div>
+                    <div class="text-muted small">
+                        Currently utilising the deterministic <strong class="text-white">declining-balance valuation</strong> (₹{{ current_value|floatformat:0 }}). Once the Mendeley vehicle sales dataset is ingested, the ML-predicted price will automatically populate here.
+                    </div>
                 </div>
                 {% endif %}
+
+                <div class="d-flex gap-2">
+                    <a href="{% url 'core:how_it_works' %}" class="btn btn-surface btn-sm">
+                        <i class="bi bi-lightbulb me-1"></i>Pipeline Methodology
+                    </a>
+                </div>
             </div>
         </div>
 
         <div class="col-lg-6">
             <div class="alp-card h-100">
-                <h5 class="mb-3"><i class="bi bi-info-circle me-2 text-emerald"></i>What These Numbers Mean</h5>
+                <h5 class="mb-3"><i class="bi bi-shield-check text-emerald me-2"></i>Multi-Signal Decision Framework</h5>
                 <p class="text-muted small mb-3">
-                    The recommendation, health score and depreciation curve shown here are generated by
-                    <strong class="text-white">rule-based prototype</strong> models, not yet trained ML models.
+                    AutoLifecycle Predictor evaluates seven orthogonal mechanical, financial, and usage signals to arrive at an explainable lifecycle recommendation:
                 </p>
-                <p class="text-muted small mb-3">
-                    Once a validated vehicle dataset is loaded and the ML model is trained,
-                    all estimates on this page will be replaced with data-driven predictions.
-                </p>
+                <div class="row g-2 small text-muted mb-3">
+                    <div class="col-sm-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <span class="text-white fw-semibold">1. Health Composite</span> (5 weighted factors)
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <span class="text-white fw-semibold">2. Depreciation Velocity</span> (Residual %)
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <span class="text-white fw-semibold">3. Maintenance Risk</span> (11 trigger factors)
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <span class="text-white fw-semibold">4. Annual Cost Burden</span> (% of purchase price)
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <span class="text-white fw-semibold">5. Age-Related Deterioration</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-2 rounded-alp" style="background: var(--alp-surface-2);">
+                            <span class="text-white fw-semibold">6. Repair Expenditure Ratio</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="d-grid gap-2">
-                    <a href="{% url 'core:how_it_works' %}" class="btn btn-surface btn-sm">
-                        <i class="bi bi-lightbulb me-1"></i>Learn about the ML Pipeline
-                    </a>
-                    <a href="{% url 'analytics:fleet_insights' %}" class="btn btn-surface btn-sm">
-                        <i class="bi bi-graph-up-arrow me-1"></i>View Fleet Insights
+                    <a href="{% url 'analytics:fleet_insights' %}" class="btn btn-primary-alp btn-sm">
+                        <i class="bi bi-graph-up-arrow me-1"></i>Compare with Fleet Insights
                     </a>
                 </div>
             </div>
@@ -205,7 +430,7 @@ var traces = [
         y: values,
         type: 'scatter',
         mode: 'lines+markers',
-        name: 'Est. Vehicle Value',
+        name: 'Projected Value',
         line: { color: '#10b981', width: 2.5 },
         marker: { size: 5, color: '#10b981' },
         fill: 'tozeroy',
@@ -213,14 +438,14 @@ var traces = [
     }
 ];
 
-// Vertical line for current year
+// Vertical dashed line marking current calendar year
 if (currentIdx >= 0) {
     traces.push({
         x: [currentYear, currentYear],
         y: [0, values[currentIdx]],
         type: 'scatter',
         mode: 'lines',
-        name: 'Now',
+        name: 'Now (' + currentYear + ')',
         line: { color: '#f59e0b', width: 2, dash: 'dot' },
         showlegend: true,
     });
@@ -230,20 +455,21 @@ var layout = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
     xaxis: {
-        title: 'Year',
+        title: 'Calendar Year',
         color: '#94a3b8',
         gridcolor: '#2a3550',
-        tickfont: { size: 11 }
+        tickfont: { size: 11 },
+        dtick: 1
     },
     yaxis: {
-        title: 'Est. Value (₹)',
+        title: 'Est. Residual Value (₹)',
         color: '#94a3b8',
         gridcolor: '#2a3550',
         tickformat: ',.0f',
         tickfont: { size: 11 }
     },
     legend: { font: { color: '#e2e8f0', size: 11 } },
-    margin: { t: 10, b: 50, l: 70, r: 20 },
+    margin: { t: 15, b: 50, l: 80, r: 20 },
     hovermode: 'x unified',
     hoverlabel: {
         bgcolor: '#1c2538',
